@@ -1,6 +1,6 @@
 module Main where
 
-import FA
+import FiniteAutomata
 
 main :: IO ()
-main = putStrLn $ show $ Transition "a" "b" "cd"
+main = putStrLn $ show $ Transition "a" "b" "c"
