@@ -21,6 +21,7 @@ description:         Please see the README on Github at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- HUnit
 
 library:
   source-dirs: src
@@ -38,7 +39,7 @@ executables:
 
 tests:
   tests:
-    main:                Spec.hs
+    main:                TestSuite.hs
     source-dirs:         test
     ghc-options:
     - -threaded

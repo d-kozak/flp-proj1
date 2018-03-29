@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import FA
 
 main :: IO ()
-main = someFunc
+main = putStrLn $ show $ Transition "a" "b" "cd"
