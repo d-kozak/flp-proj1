@@ -1,6 +1,29 @@
 module Main where
 
+import Data.Char
+import Data.List
+import System.IO
+import System.Environment
+
 import FiniteAutomata
 
+
+zipArgs arguments inputFiles = zipWith (\action inputSpec -> (action,inputSpec)) (mapArguments arguments) (mapInputFiles inputFiles)
+    where
+        mapArguments = map (\x -> if x == "-t" then (\input -> putStrLn "t") else (\input -> putStrLn "i"))
+        mapInputFiles = map (\input -> if input == "$" then processAutomatonFromStdin else processAutomatonFromFile input)
+
+processArgs args = if (length arguments) > (length inputFiles)
+        then  (zipArgs arguments (inputFiles ++ (replicate ((length arguments) - (length inputFiles)) "$")))
+        else zipArgs arguments inputFiles
+    where arguments = filter (\x -> x == "-t" || x == "-i") args
+          inputFiles = filter (\x -> not $ isPrefixOf "-" x) args
+
+toString args = map (\x -> (snd x) (fst x)) args
+
 main :: IO ()
-main = putStrLn $ show $ Transition "a" "b" "c"
+main = do
+     args <- getArgs
+     toString $ processArgs ["-t","-i",".gitignore","LICENSE","-t","-i", "-i"]
+
+

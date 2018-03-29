@@ -3,6 +3,8 @@ module FiniteAutomata
 , Symbol
 , Transition(Transition)
 , FA(FA)
+, processAutomatonFromFile
+, processAutomatonFromStdin
 ) where
 
 import Data.Char
@@ -48,7 +50,6 @@ parseTransition line = parseTransition' $ splitStringBy line ','
 parseTransitions :: [String] -> [Transition]
 parseTransitions lines = map parseTransition lines
 
-
 parseSymbols :: [String] -> [Symbol]
 parseSymbols lines  = map (!!1) (parsedLines lines)
     where parsedLines = map (\x -> (splitStringBy x ','))
@@ -80,7 +81,6 @@ processAutomatonFromFile fileName operation = do
     content <- hGetContents handle
     operation content
     hClose handle
-
 
 processAutomatonFromStdin :: (String -> IO()) -> IO ()
 processAutomatonFromStdin operation = do
