@@ -1,7 +1,7 @@
 module FiniteAutomata
 ( State
 , Symbol
-, Transition(Transition)
+, Transition(Transition,leftState,symbol,rightState)
 , FA(FA)
 , showFA
 , parseFA
