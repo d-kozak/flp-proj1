@@ -11,7 +11,7 @@ import Data.List
 import Data.Set
 
 determinizeFA :: FA -> FA
-determinizeFA input = det [Data.Set.singleton (startState fa)] Data.Set.empty (symbols fa) (transitions fa) [] fa
+determinizeFA input = det [Data.Set.singleton (startState fa)] (Data.Set.singleton (Data.Set.singleton (startState fa))) (symbols fa) (transitions fa) [] fa
     where fa = removeEpsilonStates input
 
 concatStates :: [State] -> State
