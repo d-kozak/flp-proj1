@@ -3,6 +3,8 @@ module FiniteAutomata
 , Symbol
 , Transition(Transition)
 , FA(FA)
+, showFA
+, parseFA
 , processAutomatonFromFile
 , processAutomatonFromStdin
 , parseTransition
