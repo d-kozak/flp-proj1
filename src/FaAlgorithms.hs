@@ -11,13 +11,17 @@ import Data.List
 import Data.Set
 
 determinizeFA :: FA -> FA
-determinizeFA fa = det [Data.Set.singleton (startState fa)] Data.Set.empty (symbols fa) (transitions fa) [] fa
+determinizeFA input = det [Data.Set.singleton (startState fa)] Data.Set.empty (symbols fa) (transitions fa) [] fa
+    where fa = removeEpsilonStates input
+
+concatStates :: [State] -> State
+concatStates = Data.List.foldl (++) ""
 
 det :: [Set State] -> Set (Set State) -> [Symbol] -> [Transition] -> [Transition] -> FA -> FA
-det [] states symbols _ newTransitions fa = fa
+det [] states symbols _ newTransitions fa = FA (toList (Data.Set.map concatStates (Data.Set.map toList states))) symbols newTransitions (startState fa) ( Data.List.map concatStates (Data.List.filter (\list -> any (\item -> elem item (finishStates fa)) list) (Data.List.map toList (toList states))))
 det (currentState:nextStates) states symbols oldTransitions transitionBuffer fa = det (nextStates ++ (toList (difference newStates states))) (Data.Set.union states newStates) symbols oldTransitions (transitionBuffer ++ newTransitions) fa
     where   collisionInfo = collisions currentState symbols oldTransitions
-            newTransitions = Data.List.map (\(symbol,states) -> Transition (show currentState) symbol (show states))  collisionInfo
+            newTransitions = Data.List.map (\(symbol,states) -> Transition (concatStates (toList currentState)) symbol (concatStates (toList states)))  collisionInfo
             newStates = fromList $ Data.List.map (\(symbol,states) -> states) collisionInfo
 
 collisions :: Set State -> [Symbol] -> [Transition] -> [(Symbol, Set State)]
@@ -28,9 +32,11 @@ mapToRightSymbols :: [[Transition]] -> [(Symbol, Set State)]
 mapToRightSymbols groupedTransitions = Data.List.map (\list -> (symbol (list !! 0), (fromList (getRightStates list)))) groupedTransitions
     where getRightStates = Data.List.map rightState
 
+faWithNewTransition :: FA -> [Transition] -> FA
+faWithNewTransition fa transitions = FA (states fa) (symbols fa) transitions (startState fa) (finishStates fa)
 
-removeEpsilonStates :: FA -> [Transition]
-removeEpsilonStates fa = concat $ Data.List.map stateClosureTupleToTransitions epsilonClosures
+removeEpsilonStates :: FA -> FA
+removeEpsilonStates fa = faWithNewTransition fa (concat $ Data.List.map stateClosureTupleToTransitions epsilonClosures)
     where   epsilonClosures = Data.List.map (\state -> (state, computeEpsilonClosure state (transitions fa))) (states fa)
             stateClosureTupleToTransitions (state,epsilonClosure) = [
                 Transition state (symbol transition) (rightState transition) |
