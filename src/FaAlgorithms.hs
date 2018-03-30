@@ -1,7 +1,6 @@
 module FaAlgorithms
 (
     determinizeFA,
-    det,
     removeEpsilonStates,
     computeEpsilonClosure
 ) where
@@ -11,26 +10,33 @@ import Data.List
 import Data.Set
 
 determinizeFA :: FA -> FA
-determinizeFA input = det [Data.Set.singleton (startState fa)] (Data.Set.singleton (Data.Set.singleton (startState fa))) (symbols fa) (transitions fa) [] fa
-    where fa = removeEpsilonStates input
+determinizeFA fa = determinizeFA' (Data.Set.singleton (Data.Set.singleton (startState fa))) (Data.Set.singleton (Data.Set.singleton (startState fa))) Data.Set.empty fa
 
-concatStates :: [State] -> State
-concatStates = Data.List.foldl (++) ""
+type MacroState = Set State
+type MacroTransition = (MacroState,Symbol,MacroState)
 
-det :: [Set State] -> Set (Set State) -> [Symbol] -> [Transition] -> [Transition] -> FA -> FA
-det [] states symbols _ newTransitions fa = FA (toList (Data.Set.map concatStates (Data.Set.map toList states))) symbols newTransitions (startState fa) ( Data.List.map concatStates (Data.List.filter (\list -> any (\item -> elem item (finishStates fa)) list) (Data.List.map toList (toList states))))
-det (currentState:nextStates) states symbols oldTransitions transitionBuffer fa = det (nextStates ++ (toList (difference newStates states))) (Data.Set.union states newStates) symbols oldTransitions (transitionBuffer ++ newTransitions) fa
-    where   collisionInfo = collisions currentState symbols oldTransitions
-            newTransitions = Data.List.map (\(symbol,states) -> Transition (concatStates (toList currentState)) symbol (concatStates (toList states)))  collisionInfo
-            newStates = fromList $ Data.List.map (\(symbol,states) -> states) collisionInfo
+determinizeFA' :: Set MacroState -> Set MacroState -> Set MacroTransition -> FA -> FA
+determinizeFA' statesToExplore macroStates macroTransitions fa
+    | Data.Set.null statesToExplore =  FA newStates (symbols fa) newTransitions (startState fa) newFinalStates
+        where   newStates = toList $ Data.Set.map foldMacroState macroStates
+                newTransitions = toList $ Data.Set.map (\(leftMacroState,symbol,rightMacroState) -> Transition (foldMacroState leftMacroState) symbol (foldMacroState rightMacroState)) macroTransitions
+                newFinalStates = toList $ Data.Set.map foldMacroState $ Data.Set.filter isFinalState macroStates
+                    where isFinalState macroState = Data.Set.foldl (\acc current -> acc || (elem current (finishStates fa))) False macroState
 
-collisions :: Set State -> [Symbol] -> [Transition] -> [(Symbol, Set State)]
-collisions currentState symbols oldTransitions = mapToRightSymbols $ groupBy hasSameSymbol (Data.List.filter (\transition -> member (leftState transition) currentState) oldTransitions)
-    where   hasSameSymbol left right = (symbol left) == (symbol right)
+determinizeFA' statesToExplore macroStates macroTransitions fa = determinizeFA' (Data.Set.union (deleteAt 0 statesToExplore) newGeneratedStates) (Data.Set.union macroStates newGeneratedStates) (Data.Set.union macroTransitions newTransitions) fa
+    where
+          currentState = elemAt 0 statesToExplore
+          symbolsAndTheirNextStates = Data.List.map (Data.List.foldl (\(_,acc) (sym,curElem) -> (sym,curElem:acc)) ("",[])) $ Data.List.groupBy (\(a,_) (b,_) -> a == b) $ [ (symbol,nextState) |
+                                                                startState1 <- (toList currentState),
+                                                                symbol <- (symbols fa),
+                                                                nextState <- (states fa),
+                                                                elem (Transition startState1 symbol nextState) (transitions fa)]
+          newTransitions = fromList $ Data.List.map (\(symbol,nextStates) -> (currentState,symbol,fromList nextStates)) symbolsAndTheirNextStates
+          newGeneratedStates = difference (fromList $ (Data.List.map (\(_,states) -> fromList states)) symbolsAndTheirNextStates) macroStates
 
-mapToRightSymbols :: [[Transition]] -> [(Symbol, Set State)]
-mapToRightSymbols groupedTransitions = Data.List.map (\list -> (symbol (list !! 0), (fromList (getRightStates list)))) groupedTransitions
-    where getRightStates = Data.List.map rightState
+
+foldMacroState :: MacroState -> State
+foldMacroState = (Data.Set.foldl (++) "")
 
 faWithNewTransition :: FA -> [Transition] -> FA
 faWithNewTransition fa transitions = FA (states fa) (symbols fa) transitions (startState fa) (finishStates fa)
