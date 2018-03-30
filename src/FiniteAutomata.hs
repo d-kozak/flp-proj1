@@ -5,6 +5,7 @@ module FiniteAutomata
 , FA(FA)
 , processAutomatonFromFile
 , processAutomatonFromStdin
+, parseTransition
 ) where
 
 import Data.Char

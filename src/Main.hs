@@ -23,7 +23,7 @@ processArgs args = if (length arguments) > (length inputFiles)
 main :: IO ()
 main = do
      args <- getArgs
-     execute $ processArgs ["-t","-i",".gitignore","LICENSE","-t","-i","README.md"]
+     execute $ processArgs ["-t","-i",".gitignore","LICENSE","-t","-i","README.md", "README.md"]
      where execute [] = return ()
            execute (x:xs) = do
                 (snd x) (fst x)

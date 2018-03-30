@@ -20,8 +20,6 @@ processArgs args = if (length arguments) > (length inputFiles)
     where arguments = filter (\x -> x == "-t" || x == "-i") args
           inputFiles = filter (\x -> not $ isPrefixOf "-" x) args
 
--- toString args = map (\x -> (snd x) (fst x)) args
-
 main :: IO ()
 main = do
      args <- getArgs
