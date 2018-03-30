@@ -16,7 +16,7 @@ inputParsingTests = TestList [
 algorithmsTests = TestList []
 
 tests = TestList    [TestLabel "parsingInput" inputParsingTests,
-                     TestLabel "Algorithms" algorithmsTests]
+                     TestLabel "FaAlgorithms" algorithmsTests]
 
 main :: IO ()
 main = do

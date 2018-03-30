@@ -11,9 +11,10 @@ import System.Environment
 import Control.Monad
 
 import FiniteAutomata
+import FaAlgorithms
 
-determineFA :: String -> IO ()
-determineFA input = putStrLn $ showFA $ parseFA $ lines input
+determinizeAndPrintFA :: String -> IO ()
+determinizeAndPrintFA input = putStrLn $ showFA $ determinizeFA $ parseFA $ lines input
 
 justPrintFA :: String -> IO ()
 justPrintFA input = putStrLn $ showFA $ parseFA $ lines input
@@ -21,7 +22,7 @@ justPrintFA input = putStrLn $ showFA $ parseFA $ lines input
 zipArgs arguments inputFiles = zipWith (\action inputSpec -> inputSpec action) (mapArguments arguments) (mapInputFiles inputFiles)
     where
         mapArguments = map stringToAction
-            where   stringToAction "-t" = determineFA
+            where   stringToAction "-t" = determinizeAndPrintFA
                     stringToAction "-i" = justPrintFA
                     stringToAction arg = error $ "unknown argument: " ++ arg
         mapInputFiles = map stringToAction
