@@ -2,7 +2,7 @@ module FiniteAutomata
 ( State
 , Symbol
 , Transition(Transition,leftState,symbol,rightState)
-, FA(FA)
+, FA(FA,states,symbols,transitions,startState,finishStates)
 , showFA
 , parseFA
 , processAutomatonFromFile
