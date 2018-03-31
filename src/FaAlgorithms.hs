@@ -26,11 +26,10 @@ determinizeFA' statesToExplore macroStates macroTransitions fa
 determinizeFA' statesToExplore macroStates macroTransitions fa = determinizeFA' (Data.Set.union (deleteAt 0 statesToExplore) newGeneratedStates) (Data.Set.union macroStates newGeneratedStates) (Data.Set.union macroTransitions newTransitions) fa
     where
           currentState = elemAt 0 statesToExplore
-          symbolsAndTheirNextStates = Data.List.map (Data.List.foldl (\(_,acc) (sym,curElem) -> (sym,curElem:acc)) ("",[])) $ Data.List.groupBy (\(a,_) (b,_) -> a == b) $ [ (symbol,nextState) |
-                                                                startState1 <- (toList currentState),
-                                                                symbol <- (symbols fa),
+          symbolsAndTheirNextStates = Data.List.map (Data.List.foldl (\(_,acc) (sym,curElem) -> (sym,curElem:acc)) ("",[])) $ Data.List.groupBy (\(a,_) (b,_) -> a == b) $ [ (sym,nextState) |
+                                                                sym <- (symbols fa),
                                                                 nextState <- (states fa),
-                                                                elem (Transition startState1 symbol nextState) (transitions fa)]
+                                                                any (\t -> (symbol t) == sym && (rightState t) == nextState && (elem (leftState t) currentState)) (transitions fa)]
           newTransitions = fromList $ Data.List.map (\(symbol,nextStates) -> (currentState,symbol,fromList nextStates)) symbolsAndTheirNextStates
           newGeneratedStates = difference (fromList $ (Data.List.map (\(_,states) -> fromList states)) symbolsAndTheirNextStates) macroStates
 
