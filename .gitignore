@@ -3,3 +3,5 @@ flp-proj-func.cabal
 *~
 .idea/
 rka-2-dka
+*.hi
+*.*
