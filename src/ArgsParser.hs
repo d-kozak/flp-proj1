@@ -1,3 +1,8 @@
+-- RKA 2 DKA
+-- Autor: David Kozak
+-- Contact: dkozak94@gmail.com
+-- Year: 2017/2018
+
 module ArgsParser
 (
     processArgs
@@ -15,6 +20,19 @@ import FaAlgorithms
 
 determinizeAndPrintFA :: String -> IO ()
 determinizeAndPrintFA input = putStrLn $ showFA $ determinizeFA $ parseFA $ lines input
+
+-- renameStatesToNumbers :: FA -> FA
+-- renameStatesToNumbers fa = f (states fa) fa 1
+--     where   f [] fa counter = fa
+--             f (x:xs) fa counter = f xs (replaceState x (show counter) fa) (counter + 1)
+--                 where replaceState previousName newName fa = FA newStates (symbols fa) newTransitions newStartState newFinishStates 
+--                         where   newStates = map replaceSelectedState (states fa)
+--                                 newTransitions = map mapTransition (transitions fa)
+--                                     where mapTransition (Transition leftState symbol rightState) = Transition (replaceSelectedState leftState)  symbol  (replaceSelectedState rightState)
+--                                 newStartState = replaceSelectedState (startState fa)
+--                                 newFinishStates = map replaceSelectedState (finishStates fa)
+--                                 replaceSelectedState currentState = if (currentState == previousName) then newName else currentState
+
 
 justPrintFA :: String -> IO ()
 justPrintFA input = putStrLn $ showFA $ parseFA $ lines input

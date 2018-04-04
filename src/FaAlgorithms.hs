@@ -1,3 +1,8 @@
+-- RKA 2 DKA
+-- Autor: David Kozak
+-- Contact: dkozak94@gmail.com
+-- Year: 2017/2018
+
 module FaAlgorithms
 (
     determinizeFA,

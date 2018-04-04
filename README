@@ -10,6 +10,7 @@ Pomoci prepinace -t zapnete determinizaci
 Program ocekava, ze na vstupu je syntakticky i semanticky korektni rozsireny automat. 
 
 Rozsireni:
-Program je schopny zpracovat i automaty, jejich stavy a symboly jsou retezce. 
-Dale je tez mozne jednim spustenim zahajit zpracovani nekolika automatu, viz ./rka-2-tka -i input2 -t input2 -t input3 -i // tento posledni bude nacteny ze standardniho vstupu
+a) Program je schopny zpracovat i automaty, jejich stavy a symboly jsou retezce. Pri vypisovani ale dochazi ke precislovani stavu 
+b) Dale je tez mozne jednim spustenim zahajit zpracovani nekolika automatu, viz ./rka-2-tka -i input2 -t input2 -t input3 -i // tento posledni bude nacteny ze      standardniho vstupu
     Nanestesti ale neni mozne v tomto pripade nacitat vice nez jeden automat ze standardniho vstupu, nebot funkce getContents neni reentrantni
+c) pridan prepinac -e, ktery zapina pouze odstraneni epsilon prechodu bez nasledne determinizace
