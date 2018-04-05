@@ -3,6 +3,7 @@
 -- Contact: dkozak94@gmail.com
 -- Year: 2017/2018
 
+-- Module for data structures representing FA
 module FiniteAutomata
 ( State
 , Symbol
@@ -38,7 +39,9 @@ data FA = FA {
 } deriving (Show,Eq,Ord)
 
 
+-- functions for parsing fa
 
+-- returns a list of strings that is created when spliting the original one by selected denomerator
 splitStringBy :: String -> Char -> [String]
 splitStringBy input delim = splitStringBy' input delim [] []
     where   splitStringBy' [] _ buffer output = if null buffer then output else output ++ [buffer]
@@ -72,6 +75,8 @@ parseFA lines = FA states symbols transitions startState finishStates
         finishStates = splitStringBy (lines !! 2) ','
 
 
+-- functions for printing fa
+
 showFA :: FA -> String
 showFA fa = showStates (states fa) ++ "\n" ++ startState fa ++ "\n" ++ showStates (finishStates fa) ++ "\n" ++ showTransitions (transitions fa)
         where
@@ -82,6 +87,10 @@ showFA fa = showStates (states fa) ++ "\n" ++ startState fa ++ "\n" ++ showState
 
 printFa :: String -> IO ()
 printFa = \content -> putStrLn $ showFA $ parseFA $ lines content
+
+
+-- functions for loading fa
+
 
 processAutomatonFromFile  :: String -> (String -> IO()) -> IO ()
 processAutomatonFromFile fileName operation = do

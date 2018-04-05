@@ -3,6 +3,7 @@
 -- Contact: dkozak94@gmail.com
 -- Year: 2017/2018
 
+-- Module contains algorithms for removing epsilon states and determinization of FA
 module FaAlgorithms
 (
     determinizeFA,
@@ -14,12 +15,15 @@ import FiniteAutomata
 import Data.List
 import Data.Set
 
+-- provides interface for the outside world
+-- executes the internal module functions
 determinizeFA :: FA -> FA
 determinizeFA fa = determinizeFA' (Data.Set.singleton (Data.Set.singleton (startState fa))) (Data.Set.singleton (Data.Set.singleton (startState fa))) Data.Set.empty fa
 
 type MacroState = Set State
 type MacroTransition = (MacroState,Symbol,MacroState)
 
+-- edge case, when the queue of states to process is empty
 determinizeFA' :: Set MacroState -> Set MacroState -> Set MacroTransition -> FA -> FA
 determinizeFA' statesToExplore macroStates macroTransitions fa
     | Data.Set.null statesToExplore =  FA newStates (symbols fa) newTransitions (foldMacroState $ fromList [(startState fa)]) newFinalStates
@@ -28,6 +32,7 @@ determinizeFA' statesToExplore macroStates macroTransitions fa
                 newFinalStates = toList $ Data.Set.map foldMacroState $ Data.Set.filter isFinalState macroStates
                     where isFinalState macroState = Data.Set.foldl (\acc current -> acc || (elem current (finishStates fa))) False macroState
 
+-- one step in the determinization
 determinizeFA' statesToExplore macroStates macroTransitions fa = determinizeFA' (Data.Set.union (deleteAt 0 statesToExplore) newGeneratedStates) (Data.Set.union macroStates newGeneratedStates) (Data.Set.union macroTransitions newTransitions) fa
     where
           currentState = elemAt 0 statesToExplore
@@ -38,10 +43,11 @@ determinizeFA' statesToExplore macroStates macroTransitions fa = determinizeFA' 
           newTransitions = fromList $ Data.List.map (\(symbol,nextStates) -> (currentState,symbol,fromList nextStates)) symbolsAndTheirNextStates
           newGeneratedStates = difference (fromList $ (Data.List.map (\(_,states) -> fromList states)) symbolsAndTheirNextStates) macroStates
 
-
+-- transforms macrostates into external text representation
 foldMacroState :: MacroState -> State
 foldMacroState macroState = "{" ++ (Data.Set.foldl (\acc elem -> if acc == "" then elem else (acc ++ "," ++ elem)) "" macroState) ++ "}" 
 
+-- recreates the fa, chaning only the transitions
 faWithNewTransition :: FA -> [Transition] -> FA
 faWithNewTransition fa transitions = FA (states fa) (symbols fa) transitions (startState fa) (finishStates fa)
 
@@ -55,6 +61,7 @@ removeEpsilonStates fa = faWithNewTransition fa (concat $ Data.List.map stateClo
                                                             (leftState transition) == s,
                                                             (symbol transition) /= ""]
 
+-- computes epsilon closure for a given state
 computeEpsilonClosure :: State -> [Transition] -> [State]
 computeEpsilonClosure state transitions = Data.List.foldl (++) [state] (Data.List.map (\x -> computeEpsilonClosure x transitions) nextHopEpsilonStates)
     where nextHopEpsilonStates = [(rightState transition) | transition <- transitions, (leftState transition) == state, (symbol transition) == ""]

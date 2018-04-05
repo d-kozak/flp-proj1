@@ -3,6 +3,7 @@
 -- Contact: dkozak94@gmail.com
 -- Year: 2017/2018
 
+-- Module contains functions related to argument parsing
 module ArgsParser
 (
     processArgs
@@ -18,9 +19,19 @@ import Control.Monad
 import FiniteAutomata
 import FaAlgorithms
 
+-- pipeline executed when determinizing FA
 determinizeAndPrintFA :: String -> IO ()
 determinizeAndPrintFA input = putStrLn $ showFA $ determinizeFA $ parseFA $ lines input
 
+-- pipeline executed when only parsing and printing FA
+justPrintFA :: String -> IO ()
+justPrintFA input = putStrLn $ showFA $ parseFA $ lines input
+
+-- pipeline executed when only removing epsilon states
+removeEpsilonStatesFA :: String -> IO ()
+removeEpsilonStatesFA input = putStrLn $ showFA $ removeEpsilonStates $ parseFA $ lines input
+
+-- renames states to numbers, starting at 1
 renameStatesToNumbers :: FA -> FA
 renameStatesToNumbers fa = f (states fa) fa "1"
     where   f [] fa counter = fa
@@ -34,12 +45,8 @@ renameStatesToNumbers fa = f (states fa) fa "1"
                                 replaceSelectedState currentState = if (currentState == previousName) then newName else currentState
 
 
-justPrintFA :: String -> IO ()
-justPrintFA input = putStrLn $ showFA $ parseFA $ lines input
-
-removeEpsilonStatesFA :: String -> IO ()
-removeEpsilonStatesFA input = putStrLn $ showFA $ removeEpsilonStates $ parseFA $ lines input
-
+-- converts arguments and input sources into operations that are later executed                                
+zipArgs :: [String] -> [String] -> [IO ()]                                
 zipArgs arguments inputFiles = zipWith (\action inputSpec -> inputSpec action) (mapArguments arguments) (mapInputFiles inputFiles)
     where
         mapArguments = map stringToAction
@@ -51,6 +58,8 @@ zipArgs arguments inputFiles = zipWith (\action inputSpec -> inputSpec action) (
             where   stringToAction "/" = processAutomatonFromStdin
                     stringToAction fileName = processAutomatonFromFile fileName
 
+-- splits all args into arguments and input sources
+-- if there is less input files then arguments, tries to read from standard input
 processArgs args = if (length arguments) > (length inputFiles)
         then  (zipArgs arguments (inputFiles ++ (replicate ((length arguments) - (length inputFiles)) "/")))
         else zipArgs arguments inputFiles

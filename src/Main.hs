@@ -3,6 +3,7 @@
 -- Contact: dkozak94@gmail.com
 -- Year: 2017/2018
 
+-- Main module of the project
 module Main where
 
 import Data.Char
