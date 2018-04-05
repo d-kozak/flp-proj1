@@ -9,6 +9,17 @@ Pomoci prepinace -t zapnete determinizaci
 
 Program ocekava, ze na vstupu je syntakticky i semanticky korektni rozsireny automat. 
 
+Vystupni format je lehce upraven, aby reflektoval fakt, ze nove vznikle stavy jsou casto makrostavy slozene z nekolika stavu puvodniho automatu. Proto je kazdy stav vypsan jako mnozina. Vystupni format muze vypadat napriklad nasledovne, coz umoznuje rychlejsi manualni verifikaci:
+{0,1},{0},{2}
+0
+{2}
+{0,1},a,{0,1}
+{0,1},b,{2}
+{0},a,{0,1}
+{0},b,{2}
+
+
+
 Rozsireni:
 a) Program je schopny zpracovat i automaty, jejich stavy a symboly jsou retezce. Pri vypisovani ale dochazi ke precislovani stavu 
 b) Dale je tez mozne jednim spustenim zahajit zpracovani nekolika automatu, viz ./rka-2-tka -i input2 -t input2 -t input3 -i // tento posledni bude nacteny ze      standardniho vstupu

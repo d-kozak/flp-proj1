@@ -22,7 +22,7 @@ type MacroTransition = (MacroState,Symbol,MacroState)
 
 determinizeFA' :: Set MacroState -> Set MacroState -> Set MacroTransition -> FA -> FA
 determinizeFA' statesToExplore macroStates macroTransitions fa
-    | Data.Set.null statesToExplore =  FA newStates (symbols fa) newTransitions (startState fa) newFinalStates
+    | Data.Set.null statesToExplore =  FA newStates (symbols fa) newTransitions (foldMacroState $ fromList [(startState fa)]) newFinalStates
         where   newStates = toList $ Data.Set.map foldMacroState macroStates
                 newTransitions = toList $ Data.Set.map (\(leftMacroState,symbol,rightMacroState) -> Transition (foldMacroState leftMacroState) symbol (foldMacroState rightMacroState)) macroTransitions
                 newFinalStates = toList $ Data.Set.map foldMacroState $ Data.Set.filter isFinalState macroStates
@@ -40,7 +40,7 @@ determinizeFA' statesToExplore macroStates macroTransitions fa = determinizeFA' 
 
 
 foldMacroState :: MacroState -> State
-foldMacroState = (Data.Set.foldl (++) "")
+foldMacroState macroState = "{" ++ (Data.Set.foldl (\acc elem -> if acc == "" then elem else (acc ++ "," ++ elem)) "" macroState) ++ "}" 
 
 faWithNewTransition :: FA -> [Transition] -> FA
 faWithNewTransition fa transitions = FA (states fa) (symbols fa) transitions (startState fa) (finishStates fa)
