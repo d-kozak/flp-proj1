@@ -12,6 +12,7 @@ where
 
 import Data.Char
 import Data.List
+
 import System.IO
 import System.Environment
 import Control.Monad
@@ -21,7 +22,13 @@ import FaAlgorithms
 
 -- pipeline executed when determinizing FA
 determinizeAndPrintFA :: String -> IO ()
-determinizeAndPrintFA input = putStrLn $ showFA $ determinizeFA $ parseFA $ lines input
+determinizeAndPrintFA input = putStrLn $ renameStatesToNumbers (states detFA) 1 $ showFA detFA 
+    where detFA = determinizeFA $ removeEpsilonStates $ parseFA $ lines input
+
+
+-- pipeline executed when determinizing FA
+determinizeAndPrintFANoRenaming :: String -> IO ()
+determinizeAndPrintFANoRenaming input = putStrLn $ showFA $ determinizeFA $ removeEpsilonStates $ parseFA $ lines input
 
 -- pipeline executed when only parsing and printing FA
 justPrintFA :: String -> IO ()
@@ -32,18 +39,9 @@ removeEpsilonStatesFA :: String -> IO ()
 removeEpsilonStatesFA input = putStrLn $ showFA $ removeEpsilonStates $ parseFA $ lines input
 
 -- renames states to numbers, starting at 1
-renameStatesToNumbers :: FA -> FA
-renameStatesToNumbers fa = f (states fa) fa "1"
-    where   f [] fa counter = fa
-            f (x:xs) fa counter = f xs (replaceState x (counter) fa) (counter ++ "1")
-                where replaceState previousName newName fa = FA newStates (symbols fa) newTransitions newStartState newFinishStates 
-                        where   newStates = map replaceSelectedState (states fa)
-                                newTransitions = map mapTransition (transitions fa)
-                                    where mapTransition (Transition leftState symbol rightState) = Transition (replaceSelectedState leftState)  symbol  (replaceSelectedState rightState)
-                                newStartState = replaceSelectedState (startState fa)
-                                newFinishStates = map replaceSelectedState (finishStates fa)
-                                replaceSelectedState currentState = if (currentState == previousName) then newName else currentState
-
+renameStatesToNumbers :: [State] -> Integer -> String -> String
+renameStatesToNumbers [] counter str = str
+renameStatesToNumbers (state:states) counter str = renameStatesToNumbers states  (counter + 1) (replace state (show counter) str)
 
 -- converts arguments and input sources into operations that are later executed                                
 zipArgs :: [String] -> [String] -> [IO ()]                                
@@ -53,6 +51,7 @@ zipArgs arguments inputFiles = zipWith (\action inputSpec -> inputSpec action) (
             where   stringToAction "-t" = determinizeAndPrintFA
                     stringToAction "-i" = justPrintFA
                     stringToAction "-e" = removeEpsilonStatesFA
+                    stringToAction "-d" = determinizeAndPrintFANoRenaming
                     stringToAction arg = error $ "unknown argument: " ++ arg
         mapInputFiles = map stringToAction
             where   stringToAction "/" = processAutomatonFromStdin
@@ -67,4 +66,48 @@ processArgs args = if (length arguments) > (length inputFiles)
           isArgument = isPrefixOf "-"
           arguments = filter (\x ->  isArgument x) args
           inputFiles = filter (\x -> not (isArgument x)) args
+
+
+
+
+-- a few functions from standard library, I know this is not a good practise, but I had troubles installing this particular package 
+
+-- just replaces all occurances of string a by string b in string c 
+replace :: Eq a => [a] -> [a] -> [a] -> [a]
+replace old new l = mjoin new . split old $ l
+
+spanList :: ([a] -> Bool) -> [a] -> ([a], [a])
+
+mjoin :: [a] -> [[a]] -> [a]
+mjoin delim l = concat (intersperse delim l)
+
+spanList _ [] = ([],[])
+spanList func list@(x:xs) =
+    if func list
+       then (x:ys,zs)
+       else ([],list)
+    where (ys,zs) = spanList func xs
+
+{- | Similar to Data.List.break, but performs the test on the entire remaining
+list instead of just one element.
+-}
+breakList :: ([a] -> Bool) -> [a] -> ([a], [a])
+breakList func = spanList (not . func)
+
+startswith :: Eq a => [a] -> [a] -> Bool
+startswith = isPrefixOf
+
+-- splits a list into sublist 
+split :: Eq a => [a] -> [a] -> [[a]]
+split _ [] = []
+split delim str =
+    let (firstline, remainder) = breakList (startswith delim) str
+        in 
+        firstline : case remainder of
+                                   [] -> []
+                                   x -> if x == delim
+                                        then [] : []
+                                        else split delim 
+                                                 (drop (length delim) x)
+                                
 
